@@ -23,11 +23,24 @@ jobs:
           flutter-version: '3.19.0'
           channel: 'stable'
 
-      - name: Get dependencies
-        run: flutter pub get
-
-      - name: Build APK
-        run: flutter build apk --release --no-pub
+      - name: Create Clean Project and Build APK
+        run: |
+          # إنشاء مشروع فلاتر نظيف بداخل مجلد مؤقت
+          flutter create temp_project --org com.netguard --project-name netguard_app
+          
+          # نقل ملف الmain.dart والpubspec.yaml الخاص بك إلى المشروع الجديد
+          rm -rf temp_project/lib/*
+          cp -r lib/* temp_project/lib/
+          cp pubspec.yaml temp_project/pubspec.yaml
+          
+          # الانتقال للمشروع وبناء ملف الـ APK بنجاح
+          cd temp_project
+          flutter pub get
+          flutter build apk --release
+          
+          # نقل ملف الـ APK الناتج للمسار الرئيسي ليتم رفعه
+          mkdir -p ../build/app/outputs/flutter-apk/
+          cp build/app/outputs/flutter-apk/app-release.apk ../build/app/outputs/flutter-apk/app-release.apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
